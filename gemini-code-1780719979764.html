@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoRide — Transportasi & Delivery On-Demand Bogor</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']},colors:{bo:{400:'#34d399',500:'#10b981',600:'#059669',700:'#047857'},dark:{300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617'}}}}}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:0;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#1e293b}::-webkit-scrollbar-thumb{background:#10b981;border-radius:4px}
+
+/* Layout Horizontal Desktop */
+#layout-wrapper{display:flex;width:100vw;height:100vh;overflow:hidden}
+#sidebar{width:260px;background:#1e293b;border-right:1px solid #334155;display:none;flex-direction:column;flex-shrink:0}
+.sidebar-link{padding:14px 24px;color:#94a3b8;font-size:.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s;border-left:4px solid transparent;background:transparent;border-top:none;border-right:none;border-bottom:none;text-align:left;width:100%;outline:none}
+.sidebar-link:hover{background:rgba(16,185,129,.05);color:#e2e8f0}
+.sidebar-link.active{background:rgba(16,185,129,.1);color:#10b981;border-left-color:#10b981}
+
+#app{flex:1;height:100vh;display:flex;flex-direction:column;position:relative;background:#0f172a;margin:0;overflow:hidden}
+
+.card{background:#1e293b;border:1px solid #334155;border-radius:16px}
+.card-hover{transition:all .25s}.card-hover:hover{border-color:#10b981;box-shadow:0 4px 24px rgba(16,185,129,.12)}
+.inp{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:12px;padding:12px 16px;color:#e2e8f0;font-size:.875rem;outline:none;transition:border-color .2s}
+.inp:focus{border-color:#10b981}.inp::placeholder{color:#475569}select.inp{cursor:pointer;appearance:none}
+.btn-primary{width:100%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:600;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:.9rem;transition:opacity .2s,transform .1s}
+.btn-primary:hover{opacity:.9}.btn-primary:active{transform:scale(.98)}
+
+.page{display:none;height:100%;flex-direction:column;overflow-y:auto}
+.page.active{display:flex;animation:fadeUp .35s ease forwards}
+.scroll-content{flex:1;overflow-y:auto;padding:24px 32px;max-width:1000px;margin:0 auto;width:100%}
+.top-header{background:#1e293b;border-bottom:1px solid #334155;padding:14px 32px;display:flex;align-items:center;position:sticky;top:0;z-index:40;justify-content:center}
+.top-header-inner{max-width:1000px;margin:0 auto;width:100%;display:flex;align-items:center;gap:12px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes stripe{0%{background-position:0 0}100%{background-position:40px 0}}
+.float{animation:float 3s ease-in-out infinite}
+
+.traffic-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.t-lancar{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.6)}.t-padat{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,.6)}.t-macet{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.6)}
+.food-card{background:#1e293b;border:1.5px solid #334155;border-radius:14px;padding:14px;text-align:center;transition:all .25s}
+.food-card:hover{border-color:#475569}.food-card.in-cart{border-color:#10b981;box-shadow:0 0 14px rgba(16,185,129,.18)}
+.mart-card{background:#1e293b;border:1.5px solid #334155;border-radius:14px;padding:12px;transition:all .25s}
+.mart-card:hover{border-color:#475569}.mart-card.in-cart{border-color:#6366f1;box-shadow:0 0 14px rgba(99,102,241,.18)}
+.filter-btn{padding:6px 14px;border-radius:999px;font-size:.75rem;font-weight:600;cursor:pointer;border:1.5px solid #334155;background:transparent;color:#64748b;transition:all .2s;white-space:nowrap}
+.filter-btn.active{background:rgba(99,102,241,.15);border-color:#6366f1;color:#818cf8}
+.progress-stripe{background-image:linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);background-size:40px 40px;animation:stripe 1s linear infinite}
+.star{font-size:2rem;color:#334155;cursor:pointer;transition:all .2s}.star.active,.star:hover{color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,.4)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3)}
+.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
+.badge-yellow{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.badge-purple{background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3)}
+.disabled{opacity:.45;pointer-events:none}
+.toast-item{position:fixed;top:16px;right:16px;z-index:9999;padding:12px 16px;border-radius:12px;font-size:.85rem;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:fadeUp .3s ease forwards}
+.toast-success{background:#065f46;border:1px solid #10b981}.toast-error{background:#7f1d1d;border:1px solid #ef4444}.toast-info{background:#1e3a5f;border:1px solid #3b82f6}
+.avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;flex-shrink:0}
+.v-option{background:#1e293b;border:1.5px solid #334155;border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .25s}
+.v-option:hover{border-color:#475569}.v-option.selected{border-color:#10b981;background:rgba(16,185,129,.07)}
+.disc-banner{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(139,92,246,.1));border:1px solid rgba(99,102,241,.25);border-radius:12px;padding:10px 14px;font-size:.78rem;color:#a5b4fc;display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+<div id="layout-wrapper">
+
+<!-- ============ SIDEBAR ============ -->
+<nav id="sidebar">
+  <div style="padding:24px 32px;text-align:left;border-bottom:1px solid #334155;margin-bottom:10px">
+    <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#34d399,#059669);margin-right:8px;box-shadow:0 4px 12px rgba(16,185,129,.3)">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </div>
+    <span style="font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;vertical-align:middle">BoRide</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <button type="button" class="sidebar-link active" data-nav="page-home"><span>🏠</span> Beranda</button>
+    <button type="button" class="sidebar-link" data-nav="page-bomart"><span>🛒</span> BoMart</button>
+    <button type="button" class="sidebar-link" data-nav="page-history"><span>📜</span> Riwayat</button>
+    <button type="button" class="sidebar-link" data-nav="page-profile"><span>👤</span> Profil Akun</button>
+  </div>
+</nav>
+
+<!-- ============ APP MAIN CONTENT ============ -->
+<main id="app">
+
+<!-- ============ AUTH ============ -->
+<div id="page-auth" class="page active" style="min-height:100vh;justify-content:center;align-items:center;padding:24px">
+  <div style="width:100%;max-width:400px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#34d399,#059669);margin-bottom:12px;box-shadow:0 8px 24px rgba(16,185,129,.3)">
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#34d399,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent">BoRide</div>
+      <div style="color:#64748b;font-size:.9rem;margin-top:4px">Super App Kota Bogor</div>
+    </div>
+    <div id="form-login" class="card" style="padding:28px">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#f1f5f9;margin-bottom:20px">Masuk ke Akun</h2>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label style="font-size:.8rem;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px">Email</label><input id="login-email" type="email" placeholder="email@contoh.com" class="inp"></div>
+        <div><label style="font-size:.8rem;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px">Password</label><input id="login-password" type="password" placeholder="••••••••" class="inp"></div>
+        <button id="btn-login" type="button" class="btn-primary" style="margin-top:8px">Masuk</button>
+      </div>
+      <p style="text-align:center;color:#64748b;font-size:.85rem;margin-top:18px">Belum punya akun? <button id="btn-to-register" type="button" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer">Daftar</button></p>
+    </div>
+    <div id="form-register" class="card" style="padding:28px;display:none">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#f1f5f9;margin-bottom:20px">Buat Akun Baru</h2>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label style="font-size:.8rem;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px">Nama Lengkap</label><input id="reg-name" type="text" placeholder="Nama kamu" class="inp"></div>
+        <div><label style="font-size:.8rem;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px">Email</label><input id="reg-email" type="email" placeholder="email@contoh.com" class="inp"></div>
+        <div><label style="font-size:.8rem;color:#94a3b8;font-weight:500;display:block;margin-bottom:6px">Password</label><input id="reg-password" type="password" placeholder="Min. 6 karakter" class="inp"></div>
+        <button id="btn-register" type="button" class="btn-primary" style="margin-top:8px">Daftar Sekarang</button>
+      </div>
+      <p style="text-align:center;color:#64748b;font-size:.85rem;margin-top:18px">Sudah punya akun? <button id="btn-to-login" type="button" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer">Masuk</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOME ============ -->
+<div id="page-home" class="page">
+  <div class="top-header">
+    <div class="top-header-inner" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff" id="topbar-avatar">U</div>
+        <div><div style="font-size:.75rem;color:#64748b">Selamat datang 👋</div><div style="font-size:.95rem;font-weight:700;color:#f1f5f9" id="home-username">User</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px">
+          <svg width="16" height="16" fill="#10b981" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+          <span style="font-size:.9rem;font-weight:700;color:#10b981" id="home-balance">Rp 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:24px">
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px">
+      <!-- BoPay -->
+      <div style="background:linear-gradient(135deg,#065f46,#047857,#0f172a);border-radius:18px;padding:26px;position:relative;overflow:hidden;flex:1">
+        <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+        <div style="position:absolute;bottom:-20px;left:60px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
+          <div><div style="font-size:.8rem;color:#6ee7b7;font-weight:500;margin-bottom:4px">💳 Saldo BoPay</div><div style="font-size:2rem;font-weight:900;color:#fff" id="bopay-amount">Rp 0</div></div>
+          <div class="float" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#6ee7b7" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+        <button id="btn-topup" type="button" style="width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);color:#fff;font-weight:600;padding:12px;border-radius:12px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>Top Up Rp 50.000
+        </button>
+      </div>
+
+      <!-- Promo -->
+      <div class="card" style="padding:26px;background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(139,92,246,.06));border-color:rgba(99,102,241,.2);display:flex;align-items:center;gap:16px;flex:1">
+        <span style="font-size:3rem">🎉</span>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:4px">Promo BoMart & BoFood!</div>
+          <div style="font-size:.85rem;color:#94a3b8;line-height:1.5">BoMart: belanja &gt;Rp 50.000 otomatis <strong>diskon 50%</strong>.<br>BoFood: gunakan kode voucher <strong style="color:#fbbf24;background:rgba(251,191,36,.1);padding:2px 6px;border-radius:6px">NYUNDA</strong> untuk diskon 15%.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div>
+      <div style="font-size:.85rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">Layanan Tersedia</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:14px">
+        <button type="button" data-goto="boride" class="service-btn card card-hover" style="padding:18px 10px;text-align:center;border:none;cursor:pointer;background:#1e293b">
+          <div style="font-size:2rem;margin-bottom:8px">🏍️</div><div style="font-size:.85rem;font-weight:700;color:#f1f5f9">BoRide</div><div style="font-size:.7rem;color:#64748b;margin-top:2px">Motor</div>
+        </button>
+        <button type="button" data-goto="bocar" class="service-btn card card-hover" style="padding:18px 10px;text-align:center;border:none;cursor:pointer;background:#1e293b">
+          <div style="font-size:2rem;margin-bottom:8px">🚗</div><div style="font-size:.85rem;font-weight:700;color:#f1f5f9">BoCar</div><div style="font-size:.7rem;color:#64748b;margin-top:2px">Mobil</div>
+        </button>
+        <button type="button" data-goto="bofood" class="service-btn card card-hover" style="padding:18px 10px;text-align:center;border:none;cursor:pointer;background:#1e293b">
+          <div style="font-size:2rem;margin-bottom:8px">🍽️</div><div style="font-size:.85rem;font-weight:700;color:#f1f5f9">BoFood</div><div style="font-size:.7rem;color:#64748b;margin-top:2px">Kuliner</div>
+        </button>
+        <button type="button" data-goto="bomart" class="service-btn card card-hover" style="padding:18px 10px;text-align:center;border:none;cursor:pointer;background:#1e293b">
+          <div style="font-size:2rem;margin-bottom:8px">🛒</div><div style="font-size:.85rem;font-weight:700;color:#f1f5f9">BoMart</div><div style="font-size:.7rem;color:#64748b;margin-top:2px">Belanja</div>
+        </button>
+        <button type="button" data-goto="bosend" class="service-btn card card-hover" style="padding:18px 10px;text-align:center;border:none;cursor:pointer;background:#1e293b;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:6px;right:6px;font-size:0.55rem;background:#f59e0b;color:#fff;padding:2px 6px;border-radius:10px;font-weight:700">PREMIUM</div>
+          <div style="font-size:2rem;margin-bottom:8px">📦</div><div style="font-size:.85rem;font-weight:700;color:#f1f5f9">BoSend</div><div style="font-size:.7rem;color:#64748b;margin-top:2px">Paket</div>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Traffic -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:.85rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em">🚦 Monitor Lalu Lintas Kota Bogor</div>
+        <button id="btn-refresh-traffic" type="button" style="font-size:.8rem;color:#10b981;font-weight:600;background:rgba(16,185,129,.1);border:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px">Refresh</button>
+      </div>
+      <div id="traffic-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ ORDER RIDE/CAR ============ -->
+<div id="page-order" class="page">
+  <div class="top-header">
+    <div class="top-header-inner">
+      <button type="button" data-nav-back="page-home" class="nav-back" style="width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#e2e8f0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 id="order-title" style="font-size:1.1rem;font-weight:700;color:#f1f5f9">Pesan Transportasi</h2>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:20px;max-width:700px">
+    <div class="card" style="padding:24px">
+      <div style="font-size:.85rem;font-weight:600;color:#64748b;margin-bottom:16px">📍 Detail Rute Perjalanan</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Lokasi Jemput</label><input id="order-pickup" type="text" placeholder="Contoh: Rumah, Kantor, dll" class="inp"></div>
+        <div><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Lokasi Tujuan</label>
+          <select id="order-destination" class="inp"></select>
+        </div>
+      </div>
+    </div>
+    <div><div style="font-size:.85rem;font-weight:600;color:#64748b;margin-bottom:14px">🚘 Pilih Kendaraan</div><div id="vehicle-options" style="display:flex;flex-direction:column;gap:12px"></div></div>
+    <div id="order-traffic-info" class="card" style="padding:18px;display:none">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:1.5rem">🚦</span>
+        <div><div style="font-size:.8rem;color:#64748b">Kondisi Rute Saat Ini</div><div id="order-traffic-status" style="font-size:1rem;font-weight:700;color:#f1f5f9;margin-top:2px">-</div></div>
+        <span id="order-traffic-dot" class="traffic-dot" style="margin-left:auto;width:14px;height:14px"></span>
+      </div>
+    </div>
+    <div class="card" style="padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:.9rem;color:#64748b">Estimasi Biaya</span><span id="order-price" style="font-size:1.6rem;font-weight:900;color:#10b981">Rp 0</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px"><span style="font-size:.85rem;color:#475569">Saldo BoPay Saat Ini</span><span id="order-balance" style="font-size:.85rem;color:#94a3b8;font-weight:600">Rp 0</span></div>
+      <button id="btn-confirm-order" type="button" class="btn-primary disabled" style="font-size:1rem;padding:14px">Pesan Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PREMIUM REGISTRATION ============ -->
+<div id="page-premium" class="page">
+  <div class="top-header">
+    <div class="top-header-inner">
+      <button type="button" data-nav-back="page-home" class="nav-back" style="width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#e2e8f0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">👑 Upgrade Premium</h2>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:20px;max-width:600px">
+    <div class="card" style="padding:32px;text-align:center;">
+      <div style="font-size:4rem;margin-bottom:14px">👑</div>
+      <h3 style="color:#f1f5f9;font-size:1.4rem;font-weight:800;margin-bottom:10px">BoRide Premium</h3>
+      <p style="color:#94a3b8;font-size:.95rem;margin-bottom:28px;line-height:1.5">Akses layanan pengiriman barang <strong>BoSend</strong> secara eksklusif dan nikmati fitur lainnya dengan memverifikasi identitas asli Anda.</p>
+      
+      <div style="text-align:left;display:flex;flex-direction:column;gap:18px">
+        <div>
+          <label style="font-size:.85rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:8px">Nomor Induk Kependudukan (NIK)</label>
+          <input id="prem-nik" type="number" placeholder="Masukkan 16 Digit NIK KTP Anda" class="inp" style="padding:14px 18px;font-size:1rem">
+        </div>
+        <div>
+          <label style="font-size:.85rem;color:#94a3b8;font-weight:600;display:block;margin-bottom:8px">Upload Foto KTP Asli</label>
+          <input id="prem-ktp" type="file" accept="image/*" class="inp" style="padding:12px 18px;background:#1e293b;color:#94a3b8;cursor:pointer">
+        </div>
+        <button id="btn-submit-premium" type="button" class="btn-primary" style="margin-top:12px;background:linear-gradient(135deg,#f59e0b,#d97706);font-size:1rem;padding:14px">Verifikasi KTP & Upgrade</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOSEND ============ -->
+<div id="page-bosend" class="page">
+  <div class="top-header">
+    <div class="top-header-inner">
+      <button type="button" data-nav-back="page-home" class="nav-back" style="width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#e2e8f0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">📦 Pesan BoSend</h2>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:20px;max-width:700px">
+    <div class="disc-banner" style="padding:14px 18px;font-size:.9rem;background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#6ee7b7">
+      <span style="font-size:1.4rem">✨</span>
+      <div>Layanan Eksklusif Member Premium. Siap mengirim paket ke tujuan manapun dengan aman.</div>
+    </div>
+
+    <div class="card" style="padding:24px">
+      <div style="font-size:.85rem;font-weight:600;color:#64748b;margin-bottom:16px">📍 Detail Pengiriman Paket</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Lokasi Penjemputan</label><input id="bosend-pickup" type="text" placeholder="Masukkan alamat lengkap rumah/kantor untuk ambil paket" class="inp"></div>
+        <div><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Lokasi Tujuan (Ketik Manual)</label><input id="bosend-dest" type="text" placeholder="Ketik secara manual alamat penerima paket" class="inp"></div>
+      </div>
+    </div>
+    
+    <div class="card" style="padding:24px">
+      <div style="font-size:.85rem;font-weight:600;color:#64748b;margin-bottom:16px">⚖️ Rincian Barang</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Berat Perkiraan (Kg)</label><input id="bosend-weight" type="number" min="1" placeholder="Contoh: 2" class="inp"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:.9rem;color:#64748b">Estimasi Biaya</span><span id="bosend-price" style="font-size:1.6rem;font-weight:900;color:#10b981">Rp 0</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px"><span style="font-size:.85rem;color:#475569">Saldo BoPay</span><span id="bosend-balance" style="font-size:.85rem;color:#94a3b8;font-weight:600">Rp 0</span></div>
+      <button id="btn-confirm-bosend" type="button" class="btn-primary disabled" style="font-size:1rem;padding:14px">Kirim Paket Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOFOOD ============ -->
+<div id="page-bofood" class="page">
+  <div class="top-header">
+    <div class="top-header-inner">
+      <button type="button" data-nav-back="page-home" class="nav-back" style="width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#e2e8f0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">🍽️ BoFood — Kuliner Sunda</h2>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;gap:24px;align-items:flex-start">
+    <div style="flex:1;display:flex;flex-direction:column;gap:24px">
+      <div><div style="font-size:.9rem;font-weight:600;color:#64748b;margin-bottom:14px">🍛 Menu Makanan</div><div id="food-menu-makanan" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:14px"></div></div>
+      <div><div style="font-size:.9rem;font-weight:600;color:#64748b;margin-bottom:14px">🥤 Menu Minuman</div><div id="food-menu-minuman" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:14px"></div></div>
+    </div>
+    
+    <div class="card" style="padding:24px;width:340px;position:sticky;top:80px;flex-shrink:0">
+      <div style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:16px">🛒 Keranjang Belanja</div>
+      <div id="food-cart-items" style="margin-bottom:18px"><p style="color:#475569;font-size:.9rem;text-align:center;padding:16px 0">Keranjang kosong</p></div>
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <input id="food-voucher" type="text" placeholder="Kode Voucher" class="inp" style="text-transform:uppercase">
+        <button id="btn-apply-voucher" type="button" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:600;padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-size:.85rem;white-space:nowrap">Pakai</button>
+      </div>
+      <div id="voucher-status" style="display:none;margin-bottom:14px;font-size:.85rem;padding:10px 14px;border-radius:10px"></div>
+      <div style="margin-bottom:18px"><label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">Lokasi Pengantaran</label>
+        <select id="food-destination" class="inp"></select>
+      </div>
+      <div style="border-top:1px solid #334155;padding-top:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:#64748b">Subtotal</span><span id="food-subtotal" style="color:#e2e8f0;font-weight:600">Rp 0</span></div>
+        <div id="food-discount-row" style="display:none;justify-content:space-between;font-size:.9rem"><span style="color:#fbbf24">Diskon NYUNDA (15%)</span><span id="food-discount" style="color:#fbbf24;font-weight:600">- Rp 0</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:#64748b">Ongkir Spesial</span><span style="color:#e2e8f0;font-weight:600">Rp 5.000</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:700;border-top:1px solid #334155;padding-top:14px;margin-top:4px"><span style="color:#f1f5f9">Total</span><span id="food-total" style="color:#10b981">Rp 5.000</span></div>
+      </div>
+      <button id="btn-confirm-food" type="button" class="btn-primary disabled" style="margin-top:20px;background:linear-gradient(135deg,#f59e0b,#d97706);font-size:1rem;padding:14px">Pesan BoFood</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOMART ============ -->
+<div id="page-bomart" class="page">
+  <div class="top-header">
+    <div class="top-header-inner">
+      <button type="button" data-nav-back="page-home" class="nav-back" style="width:36px;height:36px;border-radius:10px;border:1px solid #334155;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#e2e8f0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">🛒 BoMart — Belanja Kebutuhan Harian</h2>
+    </div>
+  </div>
+  <div class="scroll-content" style="display:flex;gap:24px;align-items:flex-start">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px">
+      <!-- Promo Banner -->
+      <div class="disc-banner" style="padding:14px 20px;font-size:.9rem">
+        <span style="font-size:1.6rem">🏷️</span>
+        <div><strong style="color:#c7d2fe">Diskon 50%</strong> otomatis memotong total belanjaan Anda untuk pembelian di atas <strong style="color:#c7d2fe">Rp 50.000</strong> (sebelum ongkos kirim)!</div>
+      </div>
+      <!-- Filter -->
+      <div>
+        <div style="font-size:.85rem;font-weight:600;color:#64748b;margin-bottom:12px">Pilih Kategori Produk</div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px">
+          <button type="button" class="filter-btn active" data-cat="semua">Semua Produk</button>
+          <button type="button" class="filter-btn" data-cat="pokok">🌾 Kebutuhan Pokok</button>
+          <button type="button" class="filter-btn" data-cat="cemilan">🍿 Cemilan & Snack</button>
+          <button type="button" class="filter-btn" data-cat="kesehatan">💊 Kesehatan</button>
+        </div>
+      </div>
+      <!-- Products -->
+      <div id="mart-product-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:14px"></div>
+    </div>
+    
+    <!-- Cart -->
+    <div class="card" style="padding:24px;width:340px;position:sticky;top:80px;flex-shrink:0">
+      <div style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:16px">🛒 Keranjang BoMart</div>
+      <div id="mart-cart-items" style="margin-bottom:18px"><p style="color:#475569;font-size:.9rem;text-align:center;padding:16px 0">Keranjang masih kosong</p></div>
+      <!-- Alamat antar -->
+      <div style="margin-bottom:18px">
+        <label style="font-size:.85rem;color:#94a3b8;display:block;margin-bottom:8px">📍 Alamat Pengantaran</label>
+        <input id="mart-address" type="text" placeholder="Contoh: Jl. Raya Tajur No. 12, Bogor" class="inp">
+      </div>
+      <div style="border-top:1px solid #334155;padding-top:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:#64748b">Subtotal</span><span id="mart-subtotal" style="color:#e2e8f0;font-weight:600">Rp 0</span></div>
+        <div id="mart-discount-row" style="display:none;justify-content:space-between;font-size:.9rem">
+          <span style="color:#818cf8">🏷️ Diskon 50%</span><span id="mart-discount" style="color:#818cf8;font-weight:600">- Rp 0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:#64748b">Ongkir Standard</span><span style="color:#e2e8f0;font-weight:600">Rp 8.000</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:700;border-top:1px solid #334155;padding-top:14px;margin-top:4px"><span style="color:#f1f5f9">Total Bayar</span><span id="mart-total" style="color:#818cf8">Rp 8.000</span></div>
+      </div>
+      <button id="btn-confirm-mart" type="button" class="btn-primary disabled" style="margin-top:20px;background:linear-gradient(135deg,#6366f1,#4f46e5);font-size:1rem;padding:14px">Bayar Pesanan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TRACKING ============ -->
+<div id="page-tracking" class="page">
+  <div class="top-header"><div class="top-header-inner" style="justify-content:center"><h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">📡 Pelacakan Langsung</h2></div></div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:18px;max-width:600px;justify-content:center">
+    <div class="card" style="padding:22px;display:flex;align-items:center;gap:18px">
+      <div style="width:64px;height:64px;border-radius:18px;background:rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0"><span id="track-icon">🏍️</span></div>
+      <div style="flex:1"><div style="font-size:.8rem;color:#64748b">Mitra Pengemudi Anda</div><div id="track-driver" style="font-size:1.2rem;font-weight:700;color:#f1f5f9;margin-bottom:2px">-</div><div id="track-vehicle-info" style="font-size:.85rem;color:#94a3b8">-</div></div>
+      <div style="text-align:right"><div style="font-size:.8rem;color:#64748b">Total Biaya</div><div id="track-cost" style="font-size:1.2rem;font-weight:700;color:#10b981">-</div></div>
+    </div>
+    <div class="card" style="padding:22px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:50%;background:#10b981;flex-shrink:0"></div><span id="track-from" style="font-size:.95rem;font-weight:500;color:#e2e8f0">Dari: -</span></div>
+      <div style="margin-left:5px;border-left:2px dashed #334155;height:24px"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:8px"><div style="width:12px;height:12px;border-radius:50%;background:#ef4444;flex-shrink:0"></div><span id="track-to" style="font-size:.95rem;font-weight:500;color:#e2e8f0">Ke: -</span></div>
+    </div>
+    <div class="card" style="padding:22px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="font-size:.85rem;color:#64748b;font-weight:500">Progress Perjalanan</span><span id="track-percent" style="font-size:.95rem;font-weight:700;color:#10b981">0%</span></div>
+      <div style="background:#0f172a;border-radius:999px;height:18px;overflow:hidden"><div id="track-progress-bar" class="progress-stripe" style="width:0%;height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:999px;transition:width .3s"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:14px"><span id="track-status-text" style="font-size:.9rem;font-weight:600;color:#e2e8f0">Menunggu mitra...</span><span id="track-eta" style="font-size:.9rem;font-weight:700;color:#10b981">ETA: -</span></div>
+    </div>
+    <div class="card" style="padding:18px;display:flex;align-items:center;gap:14px">
+      <span style="font-size:1.5rem">🚦</span>
+      <div><div style="font-size:.8rem;color:#64748b">Laporan Kondisi Rute</div><div id="track-traffic-text" style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin-top:2px">-</div></div>
+      <span id="track-traffic-dot" class="traffic-dot" style="margin-left:auto;width:14px;height:14px"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ REVIEW ============ -->
+<div id="page-review" class="page">
+  <div class="top-header"><div class="top-header-inner" style="justify-content:center"><h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">⭐ Ulasan & Rating</h2></div></div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:18px;max-width:600px;justify-content:center">
+    <div class="card" style="padding:32px;text-align:center">
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div style="font-size:1.3rem;font-weight:800;color:#f1f5f9;margin-bottom:8px">Pesanan Berhasil Diselesaikan!</div>
+      <div id="review-summary" style="font-size:.9rem;color:#94a3b8">-</div>
+    </div>
+    <div class="card" style="padding:24px"><div style="font-size:.9rem;font-weight:600;color:#64748b;margin-bottom:16px">📋 Ringkasan Transaksi</div><div id="review-details" style="display:flex;flex-direction:column;gap:12px;font-size:.9rem"></div></div>
+    <div class="card" style="padding:24px;text-align:center">
+      <div style="font-size:.95rem;font-weight:600;color:#f1f5f9;margin-bottom:18px">Bagaimana pelayanan driver kami?</div>
+      <div id="star-rating" style="display:flex;justify-content:center;gap:12px;margin-bottom:12px">
+        <button type="button" class="star" data-star="1">★</button>
+        <button type="button" class="star" data-star="2">★</button>
+        <button type="button" class="star" data-star="3">★</button>
+        <button type="button" class="star" data-star="4">★</button>
+        <button type="button" class="star" data-star="5">★</button>
+      </div>
+      <div id="rating-label" style="font-size:.85rem;color:#94a3b8">Klik ikon bintang untuk memberikan penilaian</div>
+    </div>
+    <div class="card" style="padding:24px"><div style="font-size:.9rem;font-weight:600;color:#f1f5f9;margin-bottom:14px">💬 Pesan & Komentar <span style="color:#64748b;font-weight:400">(Opsional)</span></div><textarea id="review-comment" rows="3" placeholder="Sampaikan kesan atau kritik Anda di sini..." class="inp" style="resize:vertical"></textarea></div>
+    <button id="btn-submit-review" type="button" class="btn-primary disabled" style="font-size:1.05rem;padding:16px">Selesai & Kirim Ulasan</button>
+  </div>
+</div>
+
+<!-- ============ PROFILE ============ -->
+<div id="page-profile" class="page">
+  <div class="top-header"><div class="top-header-inner"><h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">👤 Profil Pengguna</h2></div></div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:20px;max-width:800px">
+    <div class="card" style="padding:32px;text-align:center">
+      <div id="profile-avatar" class="avatar" style="margin:0 auto 18px;width:90px;height:90px;font-size:2.2rem">U</div>
+      <div id="profile-name" style="font-size:1.4rem;font-weight:800;color:#f1f5f9;margin-bottom:6px">-</div>
+      <div id="profile-email" style="font-size:.95rem;color:#94a3b8;margin-bottom:18px">-</div>
+      <div id="profile-status-badge" class="badge badge-green" style="display:inline-flex;padding:6px 14px;font-size:12px">✅ User Aktif</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card" style="padding:20px;text-align:center"><div id="profile-total-trips" style="font-size:1.8rem;font-weight:900;color:#10b981">0</div><div style="font-size:.8rem;color:#64748b;margin-top:6px">Total Perjalanan</div></div>
+      <div class="card" style="padding:20px;text-align:center"><div id="profile-total-spent" style="font-size:1.2rem;font-weight:800;color:#f59e0b;line-height:1.5">Rp 0</div><div style="font-size:.8rem;color:#64748b;margin-top:6px">Total Pengeluaran</div></div>
+      <div class="card" style="padding:20px;text-align:center"><div id="profile-avg-rating" style="font-size:1.8rem;font-weight:900;color:#fbbf24">-</div><div style="font-size:.8rem;color:#64748b;margin-top:6px">Rata-rata Rating</div></div>
+    </div>
+    <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+      <div style="font-size:.9rem;font-weight:600;color:#64748b;margin-bottom:6px">ℹ️ Informasi Detail Akun</div>
+      <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #0f172a">
+        <div style="width:40px;height:40px;border-radius:10px;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:1.1rem">👤</div>
+        <div><div style="font-size:.8rem;color:#64748b">Nama Terdaftar</div><div id="profile-info-name" style="font-size:.95rem;font-weight:600;color:#e2e8f0;margin-top:2px">-</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #0f172a">
+        <div style="width:40px;height:40px;border-radius:10px;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:1.1rem">📧</div>
+        <div><div style="font-size:.8rem;color:#64748b">Alamat Email</div><div id="profile-info-email" style="font-size:.95rem;font-weight:600;color:#e2e8f0;margin-top:2px">-</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid #0f172a">
+        <div style="width:40px;height:40px;border-radius:10px;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:1.1rem">📅</div>
+        <div><div style="font-size:.8rem;color:#64748b">Bergabung Sejak</div><div id="profile-join-date" style="font-size:.95rem;font-weight:600;color:#e2e8f0;margin-top:2px">-</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#0f172a;border:1px solid #334155;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🏅</div>
+          <div><div style="font-size:.8rem;color:#64748b">Status Keanggotaan</div><div id="profile-member-status" style="font-size:.95rem;font-weight:600;color:#e2e8f0;margin-top:2px">-</div></div>
+        </div>
+        <div id="profile-level-badge" class="badge badge-green" style="padding:6px 12px">Regular</div>
+      </div>
+    </div>
+    <div class="card" style="padding:24px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem">💳</div>
+        <div><div style="font-size:.85rem;color:#64748b">Saldo BoPay Tersedia</div><div id="profile-balance" style="font-size:1.2rem;font-weight:800;color:#10b981;margin-top:2px">Rp 0</div></div>
+      </div>
+      <button id="btn-profile-topup" type="button" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#10b981;font-size:.9rem;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer">Isi Saldo</button>
+    </div>
+    <button id="btn-profile-logout" type="button" style="width:100%;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);color:#f87171;font-weight:600;padding:16px;border-radius:14px;cursor:pointer;font-size:1rem;margin-top:8px">Keluar dari Akun Saya</button>
+  </div>
+</div>
+
+<!-- ============ HISTORY ============ -->
+<div id="page-history" class="page">
+  <div class="top-header"><div class="top-header-inner"><h2 style="font-size:1.1rem;font-weight:700;color:#f1f5f9">📜 Riwayat Aktivitas & Transaksi</h2></div></div>
+  <div class="scroll-content" style="display:flex;flex-direction:column;gap:14px" id="history-list"></div>
+</div>
+
+</main>
+</div>
+<div id="toast-container"></div>
+
+<script>
+'use strict';
+
+/* ====== CONSTANTS ====== */
+const DRIVER_NAMES=['Pak Asep','Kang Ujang','Mang Ade','Pak Dedi','Kang Roni','Pak Heri','Mang Tatang','Pak Iwan'];
+const PLATES=['F 1234 AB','F 5678 CD','F 2468 EF','F 1357 GH','F 9012 IJ','F 3456 KL'];
+const BORIDE_VEHICLES=[
+  {id:'vario',name:'Honda Vario 125',emoji:'🏍️',price:12000},
+  {id:'nmax',name:'Yamaha NMAX',emoji:'🏍️',price:15000},
+  {id:'vespa',name:'Vespa Matic',emoji:'🛵',price:18000}
+];
+const BOCAR_VEHICLES=[
+  {id:'avanza',name:'Toyota Avanza',emoji:'🚗',price:25000},
+  {id:'jazz',name:'Honda Jazz',emoji:'🚙',price:28000},
+  {id:'stargazer',name:'Hyundai Stargazer',emoji:'🚐',price:32000}
+];
+const BOFOOD_MENU={
+  makanan:[
+    {id:'kupat-tahu',name:'Kupat Tahu',emoji:'🥘',price:15000,type:'makanan'},
+    {id:'karedok',name:'Karedok',emoji:'🥗',price:13000,type:'makanan'},
+    {id:'mie-glosor',name:'Mie Glosor',emoji:'🍜',price:18000,type:'makanan'}
+  ],
+  minuman:[
+    {id:'es-pala',name:'Es Pala',emoji:'🧊',price:8000,type:'minuman'},
+    {id:'bajigur',name:'Bajigur',emoji:'☕',price:10000,type:'minuman'},
+    {id:'es-cendol',name:'Es Cendol',emoji:'🍧',price:9000,type:'minuman'}
+  ]
+};
+const BOMART_PRODUCTS=[
+  {id:'beras',name:'Beras 5kg',emoji:'🌾',price:68000,cat:'pokok'},
+  {id:'minyak',name:'Minyak Goreng 1L',emoji:'🫙',price:18000,cat:'pokok'},
+  {id:'gula',name:'Gula Pasir 1kg',emoji:'🍚',price:14000,cat:'pokok'},
+  {id:'telor',name:'Telur Ayam 1kg',emoji:'🥚',price:27000,cat:'pokok'},
+  {id:'tempe',name:'Tempe 2 papan',emoji:'🟫',price:8000,cat:'pokok'},
+  {id:'tahu',name:'Tahu Putih 5 pcs',emoji:'⬜',price:7000,cat:'pokok'},
+  {id:'tepung',name:'Tepung Terigu 1kg',emoji:'🌾',price:12000,cat:'pokok'},
+  {id:'garam',name:'Garam Halus 500g',emoji:'🧂',price:5000,cat:'pokok'},
+  {id:'kecap',name:'Kecap Manis 220ml',emoji:'🫙',price:11000,cat:'pokok'},
+  {id:'santan',name:'Santan Kara 65ml',emoji:'🥛',price:6000,cat:'pokok'},
+  {id:'chitato',name:'Chitato 68g',emoji:'🥔',price:13000,cat:'cemilan'},
+  {id:'oreo',name:'Oreo Vanilla 119g',emoji:'🍪',price:14000,cat:'cemilan'},
+  {id:'piattos',name:'Piattos Keju 75g',emoji:'🧀',price:9000,cat:'cemilan'},
+  {id:'taro',name:'Taro Net 160g',emoji:'🌀',price:12000,cat:'cemilan'},
+  {id:'richeese',name:'Richeese 65g',emoji:'🔶',price:8000,cat:'cemilan'},
+  {id:'qtela',name:'Qtela Singkong 230g',emoji:'🟡',price:19000,cat:'cemilan'},
+  {id:'biskuit',name:'Roma Kelapa 300g',emoji:'🍘',price:16000,cat:'cemilan'},
+  {id:'wafer',name:'Tango Wafer 130g',emoji:'🟧',price:11000,cat:'cemilan'},
+  {id:'kopiko',name:'Kopiko Kopi Candy',emoji:'☕',price:7000,cat:'cemilan'},
+  {id:'chitos',name:'Chitos Spiral 65g',emoji:'🌽',price:8500,cat:'cemilan'},
+  {id:'paracetamol',name:'Paracetamol 500mg',emoji:'💊',price:5000,cat:'kesehatan'},
+  {id:'masker',name:'Masker Medis 10pcs',emoji:'😷',price:15000,cat:'kesehatan'},
+  {id:'handsanitizer',name:'Hand Sanitizer 50ml',emoji:'🧴',price:12000,cat:'kesehatan'},
+  {id:'betadin',name:'Betadin 30ml',emoji:'🔴',price:18000,cat:'kesehatan'},
+  {id:'vitamin-c',name:'Vitamin C 1000mg',emoji:'🍊',price:22000,cat:'kesehatan'},
+  {id:'plester',name:'Plester Luka 10pcs',emoji:'🩹',price:8000,cat:'kesehatan'},
+  {id:'tolak-angin',name:'Tolak Angin Sachet',emoji:'🌿',price:5500,cat:'kesehatan'},
+  {id:'fresh-care',name:'Fresh Care Cair',emoji:'💚',price:14000,cat:'kesehatan'},
+  {id:'oralit',name:'Oralit 6 sachet',emoji:'🥤',price:9000,cat:'kesehatan'},
+  {id:'tensi',name:'Tensoplas 1 roll',emoji:'🩺',price:11000,cat:'kesehatan'}
+];
+const TRAFFIC_POINTS=[
+  {id:'otista',name:'Jembatan Otista'},
+  {id:'ciawi',name:'Pertigaan Ciawi'},
+  {id:'tajur',name:'Jalan Raya Tajur'},
+  {id:'stasiun',name:'Stasiun Bogor'},
+  {id:'kebunraya',name:'Kebun Raya Bogor'},
+  {id:'botani',name:'Botani Square'},
+  {id:'tugukujang',name:'Tugu Kujang'},
+  {id:'alunalun',name:'Alun-Alun Bogor'},
+  {id:'suryakencana',name:'Jalan Suryakencana'},
+  {id:'heulang',name:'Taman Heulang'},
+  {id:'pajajaran',name:'GOR Pajajaran'},
+  {id:'empang',name:'Empang'},
+  {id:'curugnangka',name:'Curug Nangka'}
+];
+const TRAFFIC_DURATION={'Lancar':4,'Padat Merayap':7,'Macet Parah':12};
+const RATING_LABELS=['','Sangat Buruk 😞','Buruk 😕','Cukup 😐','Baik 😊','Luar Biasa 🌟'];
+
+/* ====== STATE ====== */
+var currentUser=null,currentOrderType='',selectedVehicle=null;
+var foodCart=[],voucherApplied=false;
+var martCart=[],martCatFilter='semua';
+var currentRating=0,pendingOrder=null,trackingInterval=null;
+var trafficStatus={};
+
+/* ====== HELPERS ====== */
+function fmt(n){return 'Rp '+n.toLocaleString('id-ID');}
+function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function rndTraffic(){return rnd(['Lancar','Padat Merayap','Macet Parah']);}
+function ts(){return new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function shortDate(s){return s?(s.split(',')[0]||s):'-';}
+function dotClass(s){return s==='Lancar'?'t-lancar':s==='Padat Merayap'?'t-padat':'t-macet';}
+
+function showToast(msg,type){
+  type=type||'success';
+  var cls={success:'toast-success',error:'toast-error',info:'toast-info'};
+  var ico={success:'✅',error:'❌',info:'ℹ️'};
+  var t=document.createElement('div');
+  t.className='toast-item '+cls[type];
+  t.innerHTML='<span>'+ico[type]+'</span><span>'+msg+'</span>';
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(-12px)';t.style.transition='all .3s';},2500);
+  setTimeout(function(){t.remove();},2800);
+}
+
+function populateDestinations() {
+  const options = '<option value="">— Pilih Tujuan Perjalanan —</option>' + TRAFFIC_POINTS.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  document.getElementById('order-destination').innerHTML = options;
+  document.getElementById('food-destination').innerHTML = options;
+}
+
+/* ====== STORAGE ====== */
+function getAllUsers(){try{var r=localStorage.getItem('boride_users');if(!r)return[];var p=JSON.parse(r);return Array.isArray(p)?p:[];}catch(e){localStorage.removeItem('boride_users');return[];}}
+function saveAllUsers(u){if(!Array.isArray(u))u=[];localStorage.setItem('boride_users',JSON.stringify(u));}
+function getUserData(email){try{return JSON.parse(localStorage.getItem('boride_data_'+email))||{balance:0,history:[],joinDate:ts(),isPremium:false};}catch(e){return{balance:0,history:[],joinDate:ts(),isPremium:false};}}
+function saveUserData(email,d){localStorage.setItem('boride_data_'+email,JSON.stringify(d));}
+function saveSession(e){localStorage.setItem('boride_session',e);}
+function clearSession(){localStorage.removeItem('boride_session');}
+function getBalance(){return currentUser?getUserData(currentUser.email).balance:0;}
+function setBalance(n){if(!currentUser)return;var d=getUserData(currentUser.email);d.balance=n;saveUserData(currentUser.email,d);}
+function addHistory(entry){if(!currentUser)return;var d=getUserData(currentUser.email);d.history.unshift(entry);saveUserData(currentUser.email,d);}
+
+/* ====== AUTH ====== */
+function toggleAuthForm(form){
+  var L=document.getElementById('form-login'),R=document.getElementById('form-register');
+  if(form==='register'){L.style.display='none';R.style.display='block';}
+  else{R.style.display='none';L.style.display='block';}
+}
+function handleLogin(){
+  var email=document.getElementById('login-email').value.trim().toLowerCase();
+  var pass=document.getElementById('login-password').value;
+  if(!email||!pass){showToast('Isi email dan password!','error');return;}
+  var users=getAllUsers(),user=null;
+  for(var i=0;i<users.length;i++){if(users[i].email===email&&users[i].password===pass){user=users[i];break;}}
+  if(!user){showToast('Email atau password salah!','error');return;}
+  
+  var userData=getUserData(user.email);
+  user.isPremium=userData.isPremium||false;
+  
+  currentUser=user;saveSession(user.email);
+  showToast('Selamat datang, '+user.name+'! 👋','success');
+  initHomePage();showPage('page-home');
+  document.getElementById('login-email').value='';document.getElementById('login-password').value='';
+}
+function handleRegister(){
+  var name=document.getElementById('reg-name').value.trim();
+  var email=document.getElementById('reg-email').value.trim().toLowerCase();
+  var pass=document.getElementById('reg-password').value;
+  if(!name||!email||!pass){showToast('Lengkapi semua field!','error');return;}
+  if(pass.length<6){showToast('Password minimal 6 karakter!','error');return;}
+  if(email.indexOf('@')===-1){showToast('Email tidak valid!','error');return;}
+  var users=getAllUsers();
+  for(var i=0;i<users.length;i++){if(users[i].email===email){showToast('Email sudah terdaftar!','error');return;}}
+  var jd=ts();
+  var newUser={name:name,email:email,password:pass,joinDate:jd};
+  users.push(newUser);saveAllUsers(users);
+  
+  saveUserData(email,{balance:0,history:[],joinDate:jd,isPremium:false});
+  newUser.isPremium=false;
+  currentUser=newUser;saveSession(email);
+  
+  showToast('Pendaftaran berhasil! 🎉','success');
+  initHomePage();showPage('page-home');
+  document.getElementById('reg-name').value='';document.getElementById('reg-email').value='';document.getElementById('reg-password').value='';
+}
+function handleLogout(){
+  currentUser=null;clearSession();resetAllState();showPage('page-auth');
+  showToast('Berhasil keluar. Sampai jumpa! 👋','info');
+}
+
+/* ====== NAVIGATION ====== */
+function showPage(pageId){
+  if(pageId!=='page-tracking'&&trackingInterval){clearInterval(trackingInterval);trackingInterval=null;}
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  var t=document.getElementById(pageId);if(t)t.classList.add('active');
+  
+  var sb=document.getElementById('sidebar');
+  if(pageId==='page-auth') {
+     sb.style.display='none';
+  } else {
+     sb.style.display='flex';
+  }
+
+  document.querySelectorAll('.sidebar-link[data-nav]').forEach(function(b){
+      b.classList.toggle('active',b.getAttribute('data-nav')===pageId);
+  });
+  
+  if(pageId==='page-home')refreshHomeData();
+  else if(pageId==='page-history')renderHistory();
+  else if(pageId==='page-bofood')renderFoodMenu();
+  else if(pageId==='page-bomart')renderMartPage();
+  else if(pageId==='page-profile')renderProfile();
+}
+
+/* ====== HOME ====== */
+function initHomePage(){generateTraffic();refreshHomeData();}
+function refreshHomeData(){
+  if(!currentUser)return;
+  var bal=getBalance();
+  document.getElementById('home-username').textContent=currentUser.name;
+  document.getElementById('home-balance').textContent=fmt(bal);
+  document.getElementById('bopay-amount').textContent=fmt(bal);
+  document.getElementById('topbar-avatar').textContent=currentUser.name.charAt(0).toUpperCase();
+}
+function generateTraffic(){TRAFFIC_POINTS.forEach(function(p){trafficStatus[p.name]=rndTraffic();});renderTraffic();}
+function refreshTraffic(){
+  var btn=document.getElementById('btn-refresh-traffic');btn.textContent='⏳...';
+  setTimeout(function(){generateTraffic();btn.textContent='Refresh';showToast('Data lalu lintas diperbarui!','info');},600);
+}
+function renderTraffic(){
+  var c=document.getElementById('traffic-container');
+  c.innerHTML=TRAFFIC_POINTS.map(function(point){
+    var s=trafficStatus[point.name];
+    var dc=dotClass(s);
+    var tc=s==='Lancar'?'#22c55e':s==='Padat Merayap'?'#f59e0b':'#ef4444';
+    var emo=s==='Lancar'?'🟢':s==='Padat Merayap'?'🟡':'🔴';
+    return '<div class="card" style="padding:16px;display:flex;align-items:center;gap:14px"><span class="traffic-dot '+dc+'" style="width:12px;height:12px"></span><div style="flex:1"><div style="font-size:.9rem;font-weight:600;color:#e2e8f0">'+point.name+'</div><div style="font-size:.8rem;color:'+tc+';font-weight:500;margin-top:4px">'+s+'</div></div><span style="font-size:1.2rem">'+emo+'</span></div>';
+  }).join('');
+}
+function topUpBalance(){
+  if(!currentUser)return;setBalance(getBalance()+50000);refreshHomeData();
+  var pb=document.getElementById('profile-balance');if(pb)pb.textContent=fmt(getBalance());
+  showToast('Top Up berhasil! +Rp 50.000 💰','success');
+}
+
+/* ====== PREMIUM ====== */
+function submitPremiumForm() {
+  let nik = document.getElementById('prem-nik').value.trim();
+  let ktp = document.getElementById('prem-ktp').value;
+  if(nik.length < 16) { showToast('NIK harus minimal 16 digit angka!', 'error'); return; }
+  if(!ktp) { showToast('Harap upload foto KTP Anda!', 'error'); return; }
+
+  let d = getUserData(currentUser.email);
+  d.isPremium = true;
+  saveUserData(currentUser.email, d);
+  currentUser.isPremium = true;
+
+  showToast('Verifikasi sukses! Akun Anda kini Premium 👑', 'success');
+  showPage('page-bosend'); 
+}
+
+/* ====== ORDER ====== */
+function setOrderType(type){
+  currentOrderType=type;selectedVehicle=null;
+  document.getElementById('order-title').textContent=type==='boride'?'🏍️ Pesan BoRide':'🚗 Pesan BoCar';
+  renderVehicles(type==='boride'?BORIDE_VEHICLES:BOCAR_VEHICLES);
+  updateOrderSummary();
+  document.getElementById('order-pickup').value='';document.getElementById('order-destination').value='';
+  document.getElementById('order-traffic-info').style.display='none';
+}
+function renderVehicles(vehicles){
+  var c=document.getElementById('vehicle-options');
+  c.innerHTML=vehicles.map(function(v){
+    return '<div class="v-option" data-vehicle="'+v.id+'"><span style="font-size:1.8rem">'+v.emoji+'</span><div style="flex:1"><div style="font-size:.95rem;font-weight:700;color:#f1f5f9">'+v.name+'</div><div style="font-size:.8rem;color:#64748b;margin-top:4px">'+(currentOrderType==='boride'?'Motor':'Mobil')+'</div></div><div style="font-size:.95rem;font-weight:700;color:#10b981">'+fmt(v.price)+'</div></div>';
+  }).join('');
+  c.querySelectorAll('.v-option').forEach(function(el){el.addEventListener('click',function(){selectVehicle(el.getAttribute('data-vehicle'));});});
+}
+function selectVehicle(id){
+  var vehicles=currentOrderType==='boride'?BORIDE_VEHICLES:BOCAR_VEHICLES;selectedVehicle=null;
+  for(var i=0;i<vehicles.length;i++){if(vehicles[i].id===id){selectedVehicle=vehicles[i];break;}}
+  document.querySelectorAll('.v-option').forEach(function(el){el.classList.toggle('selected',el.getAttribute('data-vehicle')===id);});
+  updateOrderSummary();
+}
+function updateOrderSummary(){
+  var price=selectedVehicle?selectedVehicle.price:0;
+  document.getElementById('order-price').textContent=fmt(price);
+  document.getElementById('order-balance').textContent=fmt(getBalance());
+  var dest=document.getElementById('order-destination').value;
+  var pickup=document.getElementById('order-pickup').value.trim();
+  var canOrder=selectedVehicle&&dest&&pickup&&getBalance()>=price;
+  document.getElementById('btn-confirm-order').classList.toggle('disabled',!canOrder);
+  if(dest){var s=trafficStatus[dest]||'Lancar';document.getElementById('order-traffic-info').style.display='flex';document.getElementById('order-traffic-status').textContent=s;document.getElementById('order-traffic-dot').className='traffic-dot '+dotClass(s);}
+  else{document.getElementById('order-traffic-info').style.display='none';}
+}
+function confirmOrder(){
+  if(!selectedVehicle)return;
+  var pickup=document.getElementById('order-pickup').value.trim();
+  var dest=document.getElementById('order-destination').value;
+  if(!pickup||!dest){showToast('Lengkapi lokasi jemput dan tujuan!','error');return;}
+  if(getBalance()<selectedVehicle.price){showToast('Saldo BoPay Anda tidak mencukupi!','error');return;}
+  pendingOrder={type:currentOrderType==='boride'?'BoRide':'BoCar',vehicle:selectedVehicle.name,vehicleEmoji:selectedVehicle.emoji,from:pickup,to:dest,price:selectedVehicle.price,driver:rnd(DRIVER_NAMES),plate:rnd(PLATES),trafficStatus:trafficStatus[dest]||'Lancar',timestamp:ts()};
+  startTracking(pendingOrder);
+}
+
+/* ====== BOSEND ====== */
+function updateBoSendSummary() {
+  var pickup = document.getElementById('bosend-pickup').value.trim();
+  var dest = document.getElementById('bosend-dest').value.trim();
+  var weight = parseFloat(document.getElementById('bosend-weight').value) || 0;
+  var price = weight > 0 ? 10000 + (weight * 2000) : 0;
+  
+  document.getElementById('bosend-price').textContent = fmt(price);
+  document.getElementById('bosend-balance').textContent = fmt(getBalance());
+  
+  var canOrder = pickup && dest && weight > 0 && getBalance() >= price;
+  document.getElementById('btn-confirm-bosend').classList.toggle('disabled', !canOrder);
+}
+
+function confirmBoSendOrder() {
+  var pickup = document.getElementById('bosend-pickup').value.trim();
+  var dest = document.getElementById('bosend-dest').value.trim();
+  var weight = parseFloat(document.getElementById('bosend-weight').value) || 0;
+  var price = 10000 + (weight * 2000);
+
+  if(!pickup || !dest) { showToast('Isi lokasi jemput & tujuan secara lengkap!', 'error'); return; }
+  if(weight <= 0) { showToast('Berat barang tidak valid!', 'error'); return; }
+  if(getBalance() < price) { showToast('Saldo BoPay tidak cukup!', 'error'); return; }
+
+  pendingOrder = {
+      type: 'BoSend', vehicle: 'Kurir Pengiriman Paket', vehicleEmoji: '📦',
+      from: pickup, to: dest, price: price, driver: rnd(DRIVER_NAMES), plate: rnd(PLATES),
+      trafficStatus: rndTraffic(), timestamp: ts(),
+      items: [{name: 'Paket Custom ('+weight+'kg)', qty: 1, price: price}] 
+  };
+  startTracking(pendingOrder);
+}
+
+/* ====== BOFOOD ====== */
+function renderFoodMenu(){renderFoodCategory('food-menu-makanan',BOFOOD_MENU.makanan);renderFoodCategory('food-menu-minuman',BOFOOD_MENU.minuman);renderFoodCart();}
+function renderFoodCategory(cid,items){
+  var c=document.getElementById(cid);
+  c.innerHTML=items.map(function(item){
+    var inCart=null;for(var i=0;i<foodCart.length;i++){if(foodCart[i].item.id===item.id){inCart=foodCart[i];break;}}
+    var btn=inCart
+      ?'<div style="display:flex;align-items:center;justify-content:center;gap:12px"><button type="button" class="fqbtn" data-id="'+item.id+'" data-delta="-1" style="width:30px;height:30px;border-radius:8px;background:rgba(239,68,68,.15);color:#f87171;border:none;cursor:pointer;font-weight:700;font-size:1.1rem">−</button><span style="font-size:1rem;font-weight:700;color:#f1f5f9;min-width:24px;text-align:center">'+inCart.qty+'</span><button type="button" class="fqbtn" data-id="'+item.id+'" data-delta="1" style="width:30px;height:30px;border-radius:8px;background:rgba(16,185,129,.15);color:#10b981;border:none;cursor:pointer;font-weight:700;font-size:1.1rem">+</button></div>'
+      :'<button type="button" class="fabtn" data-id="'+item.id+'" style="width:100%;padding:8px;border-radius:10px;background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2);font-size:.85rem;font-weight:600;cursor:pointer">+ Tambah Pesanan</button>';
+    return '<div class="food-card'+(inCart?' in-cart':'')+'" id="fcard-'+item.id+'"><div style="font-size:2rem;margin-bottom:8px">'+item.emoji+'</div><div style="font-size:.9rem;font-weight:700;color:#f1f5f9;margin-bottom:4px">'+item.name+'</div><div style="font-size:.85rem;color:#10b981;font-weight:600;margin-bottom:14px">'+fmt(item.price)+'</div>'+btn+'</div>';
+  }).join('');
+  c.querySelectorAll('.fabtn').forEach(function(b){b.addEventListener('click',function(){addToFoodCart(b.getAttribute('data-id'));});});
+  c.querySelectorAll('.fqbtn').forEach(function(b){b.addEventListener('click',function(){updateFoodQty(b.getAttribute('data-id'),parseInt(b.getAttribute('data-delta')));});});
+}
+function addToFoodCart(id){
+  var all=BOFOOD_MENU.makanan.concat(BOFOOD_MENU.minuman),item=null;
+  for(var i=0;i<all.length;i++){if(all[i].id===id){item=all[i];break;}}if(!item)return;
+  var ex=null;for(var j=0;j<foodCart.length;j++){if(foodCart[j].item.id===id){ex=foodCart[j];break;}}
+  if(ex){ex.qty++;}else{foodCart.push({item:item,qty:1});}renderFoodMenu();
+}
+function updateFoodQty(id,delta){
+  var ex=null;for(var i=0;i<foodCart.length;i++){if(foodCart[i].item.id===id){ex=foodCart[i];break;}}
+  if(!ex)return;ex.qty+=delta;
+  if(ex.qty<=0){foodCart=foodCart.filter(function(c){return c.item.id!==id;});}
+  if(voucherApplied&&!checkVoucherEligible())voucherApplied=false;
+  renderFoodMenu();
+}
+function checkVoucherEligible(){var m=false,n=false;foodCart.forEach(function(c){if(c.item.type==='makanan')m=true;if(c.item.type==='minuman')n=true;});return m&&n;}
+function applyVoucher(){
+  var code=document.getElementById('food-voucher').value.trim().toUpperCase();
+  var sel=document.getElementById('voucher-status');sel.style.display='block';
+  if(code!=='NYUNDA'){sel.style.cssText='display:block;margin-bottom:14px;font-size:.85rem;padding:10px 14px;border-radius:10px;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)';sel.textContent='❌ Kode voucher tidak ditemukan!';voucherApplied=false;renderFoodCart();return;}
+  if(!checkVoucherEligible()){sel.style.cssText='display:block;margin-bottom:14px;font-size:.85rem;padding:10px 14px;border-radius:10px;background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2)';sel.textContent='⚠️ Minimal beli 1 makanan DAN 1 minuman!';voucherApplied=false;renderFoodCart();return;}
+  voucherApplied=true;sel.style.cssText='display:block;margin-bottom:14px;font-size:.85rem;padding:10px 14px;border-radius:10px;background:rgba(16,185,129,.1);color:#10b981;border:1px solid rgba(16,185,129,.2)';sel.textContent='✅ Voucher NYUNDA aktif! Diskon 15%';showToast('Voucher aktif! 🎉','success');renderFoodCart();
+}
+function renderFoodCart(){
+  var ci=document.getElementById('food-cart-items');
+  if(foodCart.length===0){ci.innerHTML='<p style="color:#475569;font-size:.9rem;text-align:center;padding:16px 0">Keranjang kosong</p>';}
+  else{ci.innerHTML=foodCart.map(function(c){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e293b"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.2rem">'+c.item.emoji+'</span><span style="font-size:.85rem;color:#e2e8f0">'+c.item.name+'</span><span style="font-size:.8rem;color:#475569;font-weight:700">x'+c.qty+'</span></div><span style="font-size:.9rem;color:#94a3b8;font-weight:600">'+fmt(c.item.price*c.qty)+'</span></div>';}).join('');}
+  var sub=foodCart.reduce(function(s,c){return s+c.item.price*c.qty;},0);
+  var disc=voucherApplied?Math.floor(sub*0.15):0;var total=sub-disc+5000;
+  document.getElementById('food-subtotal').textContent=fmt(sub);
+  document.getElementById('food-discount').textContent='- '+fmt(disc);
+  document.getElementById('food-discount-row').style.display=voucherApplied?'flex':'none';
+  document.getElementById('food-total').textContent=fmt(total);
+  var dest=document.getElementById('food-destination').value;
+  document.getElementById('btn-confirm-food').classList.toggle('disabled',!(foodCart.length>0&&dest&&getBalance()>=total));
+}
+function confirmFoodOrder(){
+  if(foodCart.length===0){showToast('Keranjang Anda masih kosong!','error');return;}
+  var dest=document.getElementById('food-destination').value;
+  if(!dest){showToast('Pilih lokasi tujuan pengantaran!','error');return;}
+  var sub=foodCart.reduce(function(s,c){return s+c.item.price*c.qty;},0);
+  var disc=voucherApplied?Math.floor(sub*0.15):0;var total=sub-disc+5000;
+  if(getBalance()<total){showToast('Saldo BoPay Anda kurang!','error');return;}
+  pendingOrder={type:'BoFood',items:foodCart.map(function(c){return{name:c.item.name,qty:c.qty,price:c.item.price};}),from:'Resto Sunda Bogor',to:dest,price:total,subtotal:sub,discount:disc,voucherUsed:voucherApplied,driver:rnd(DRIVER_NAMES),plate:rnd(PLATES),vehicle:'Motor Kurir',vehicleEmoji:'🏍️',trafficStatus:trafficStatus[dest]||'Lancar',timestamp:ts()};
+  startTracking(pendingOrder);
+}
+
+/* ====== BOMART ====== */
+function renderMartPage(){
+  renderMartProducts();renderMartCart();
+}
+function renderMartProducts(){
+  var filtered=martCatFilter==='semua'?BOMART_PRODUCTS:BOMART_PRODUCTS.filter(function(p){return p.cat===martCatFilter;});
+  var c=document.getElementById('mart-product-grid');
+  c.innerHTML=filtered.map(function(item){
+    var inCart=null;for(var i=0;i<martCart.length;i++){if(martCart[i].item.id===item.id){inCart=martCart[i];break;}}
+    var catColor={'pokok':'#10b981','cemilan':'#f59e0b','kesehatan':'#ec4899'};
+    var catLabel={'pokok':'🌾 Pokok','cemilan':'🍿 Cemilan','kesehatan':'💊 Kesehatan'};
+    var btn=inCart
+      ?'<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px"><button type="button" class="mqbtn" data-id="'+item.id+'" data-delta="-1" style="width:30px;height:30px;border-radius:8px;background:rgba(239,68,68,.15);color:#f87171;border:none;cursor:pointer;font-weight:700;font-size:1.1rem">−</button><span style="font-size:1rem;font-weight:700;color:#f1f5f9;min-width:24px;text-align:center">'+inCart.qty+'</span><button type="button" class="mqbtn" data-id="'+item.id+'" data-delta="1" style="width:30px;height:30px;border-radius:8px;background:rgba(99,102,241,.2);color:#818cf8;border:none;cursor:pointer;font-weight:700;font-size:1.1rem">+</button></div>'
+      :'<button type="button" class="mabtn" data-id="'+item.id+'" style="width:100%;padding:8px;border-radius:10px;background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25);font-size:.85rem;font-weight:600;cursor:pointer;margin-top:12px">+ Tambah</button>';
+    return '<div class="mart-card'+(inCart?' in-cart':'')+'" id="mcard-'+item.id+'"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span style="font-size:2rem">'+item.emoji+'</span><span style="font-size:.7rem;font-weight:600;color:'+catColor[item.cat]+';background:'+catColor[item.cat]+'1a;padding:4px 8px;border-radius:999px">'+catLabel[item.cat]+'</span></div><div style="font-size:.9rem;font-weight:700;color:#f1f5f9;margin-bottom:6px;line-height:1.4">'+item.name+'</div><div style="font-size:.85rem;color:#818cf8;font-weight:700">'+fmt(item.price)+'</div>'+btn+'</div>';
+  }).join('');
+  if(filtered.length===0){c.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px 0;color:#475569;font-size:1.1rem">Kategori produk kosong</div>';}
+  c.querySelectorAll('.mabtn').forEach(function(b){b.addEventListener('click',function(){addToMartCart(b.getAttribute('data-id'));});});
+  c.querySelectorAll('.mqbtn').forEach(function(b){b.addEventListener('click',function(){updateMartQty(b.getAttribute('data-id'),parseInt(b.getAttribute('data-delta')));});});
+}
+function addToMartCart(id){
+  var item=null;for(var i=0;i<BOMART_PRODUCTS.length;i++){if(BOMART_PRODUCTS[i].id===id){item=BOMART_PRODUCTS[i];break;}}if(!item)return;
+  var ex=null;for(var j=0;j<martCart.length;j++){if(martCart[j].item.id===id){ex=martCart[j];break;}}
+  if(ex){ex.qty++;}else{martCart.push({item:item,qty:1});}
+  renderMartPage();showToast(item.name+' ditambahkan 🛒','success');
+}
+function updateMartQty(id,delta){
+  var ex=null;for(var i=0;i<martCart.length;i++){if(martCart[i].item.id===id){ex=martCart[i];break;}}
+  if(!ex)return;ex.qty+=delta;
+  if(ex.qty<=0){martCart=martCart.filter(function(c){return c.item.id!==id;});}
+  renderMartPage();
+}
+function renderMartCart(){
+  var ci=document.getElementById('mart-cart-items');
+  if(martCart.length===0){ci.innerHTML='<p style="color:#475569;font-size:.9rem;text-align:center;padding:16px 0">Keranjang masih kosong</p>';}
+  else{ci.innerHTML=martCart.map(function(c){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f172a"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.2rem">'+c.item.emoji+'</span><span style="font-size:.85rem;color:#e2e8f0">'+c.item.name+'</span><span style="font-size:.8rem;color:#475569;font-weight:700">x'+c.qty+'</span></div><span style="font-size:.9rem;color:#94a3b8;font-weight:600">'+fmt(c.item.price*c.qty)+'</span></div>';}).join('');}
+  var sub=martCart.reduce(function(s,c){return s+c.item.price*c.qty;},0);
+  var disc=sub>50000?Math.floor(sub*0.5):0;
+  var total=sub-disc+8000;
+  document.getElementById('mart-subtotal').textContent=fmt(sub);
+  document.getElementById('mart-discount').textContent='- '+fmt(disc);
+  var dr=document.getElementById('mart-discount-row');dr.style.display=disc>0?'flex':'none';
+  document.getElementById('mart-total').textContent=fmt(total);
+  var addr=document.getElementById('mart-address').value.trim();
+  document.getElementById('btn-confirm-mart').classList.toggle('disabled',!(martCart.length>0&&addr&&getBalance()>=total));
+}
+function confirmMartOrder(){
+  if(martCart.length===0){showToast('Keranjang Anda kosong!','error');return;}
+  var addr=document.getElementById('mart-address').value.trim();
+  if(!addr){showToast('Tolong isikan alamat lengkap!','error');return;}
+  var sub=martCart.reduce(function(s,c){return s+c.item.price*c.qty;},0);
+  var disc=sub>50000?Math.floor(sub*0.5):0;var total=sub-disc+8000;
+  if(getBalance()<total){showToast('Saldo BoPay tidak cukup!','error');return;}
+  pendingOrder={
+    type:'BoMart',
+    items:martCart.map(function(c){return{name:c.item.name,qty:c.qty,price:c.item.price};}),
+    from:'BoMart Warehouse Bogor',to:addr,price:total,subtotal:sub,discount:disc,
+    driver:rnd(DRIVER_NAMES),plate:rnd(PLATES),vehicle:'Motor Kurir',vehicleEmoji:'🛵',
+    trafficStatus:rndTraffic(),timestamp:ts()
+  };
+  startTracking(pendingOrder);
+}
+
+/* ====== TRACKING ====== */
+function startTracking(order){
+  showPage('page-tracking');
+  document.getElementById('track-icon').textContent=order.vehicleEmoji;
+  document.getElementById('track-driver').textContent=order.driver;
+  document.getElementById('track-vehicle-info').textContent=order.vehicle+' • '+order.plate;
+  document.getElementById('track-cost').textContent=fmt(order.price);
+  document.getElementById('track-from').textContent='Dari: '+order.from;
+  document.getElementById('track-to').textContent='Ke: '+order.to;
+  document.getElementById('track-traffic-text').textContent=order.trafficStatus;
+  document.getElementById('track-traffic-dot').className='traffic-dot '+dotClass(order.trafficStatus);
+  var dur=TRAFFIC_DURATION[order.trafficStatus]||7;
+  var elapsed=0,ms=100;
+  var bar=document.getElementById('track-progress-bar');
+  var pct=document.getElementById('track-percent');
+  var stxt=document.getElementById('track-status-text');
+  var eta=document.getElementById('track-eta');
+  bar.style.width='0%';
+  function getStxt(p){if(p<15)return 'Driver menuju lokasi penjemputan...';if(p<30)return 'Dalam perjalanan ke '+order.from+'...';if(p<60)return 'Sedang dalam perjalanan... 🛣️';if(p<85)return 'Hampir sampai tujuan... 📍';if(p<100)return 'Mendekati '+order.to+'! 🎯';return 'Telah Tiba di Tujuan! ✅';}
+  if(trackingInterval)clearInterval(trackingInterval);
+  trackingInterval=setInterval(function(){
+    elapsed+=ms/1000;var progress=Math.min((elapsed/dur)*100,100);var rem=Math.max(Math.ceil(dur-elapsed),0);
+    bar.style.width=progress+'%';pct.textContent=Math.floor(progress)+'%';stxt.textContent=getStxt(Math.floor(progress));eta.textContent='ETA: '+rem+' detik';
+    if(progress>=100){clearInterval(trackingInterval);trackingInterval=null;eta.textContent='Telah Tiba!';stxt.textContent='Sampai tujuan! ✅';setTimeout(function(){showReviewPage(order);},800);}
+  },ms);
+}
+
+/* ====== REVIEW ====== */
+function showReviewPage(order){
+  currentRating=0;showPage('page-review');
+  var isMart=order.type==='BoMart';var isFood=order.type==='BoFood';var isSend=order.type==='BoSend';
+  document.getElementById('review-summary').textContent=(isFood?'Pesanan BoFood':isMart?'Pesanan BoMart':isSend?'Pengiriman BoSend':order.type)+' ke '+order.to;
+  if(isFood||isMart||isSend){
+    var ih=order.items.map(function(i){return '<div style="display:flex;justify-content:space-between"><span style="color:#94a3b8;font-size:.85rem">'+i.name+' x'+i.qty+'</span><span style="color:#e2e8f0;font-weight:600">'+fmt(i.price*i.qty)+'</span></div>';}).join('');
+    document.getElementById('review-details').innerHTML=ih+
+      (order.discount>0?'<div style="display:flex;justify-content:space-between;margin-top:4px"><span style="color:'+(isFood?'#fbbf24':'#818cf8')+'">Diskon Spesial</span><span style="color:'+(isFood?'#fbbf24':'#818cf8')+'">-'+fmt(order.discount)+'</span></div>':'')+
+      (isSend?'':'<div style="display:flex;justify-content:space-between;margin-top:4px"><span style="color:#94a3b8">Ongkos Kirim</span><span style="color:#e2e8f0">'+fmt(isFood?5000:8000)+'</span></div>')+
+      '<div style="display:flex;justify-content:space-between;border-top:1px solid #334155;padding-top:12px;margin-top:8px"><span style="color:#f1f5f9;font-weight:700">Total Harga</span><span style="color:#10b981;font-weight:700">'+fmt(order.price)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-top:6px"><span style="color:#64748b">Mitra Driver</span><span style="color:#e2e8f0">'+order.driver+'</span></div>';
+  } else {
+    document.getElementById('review-details').innerHTML=
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#94a3b8">Layanan</span><span style="color:#e2e8f0">'+order.type+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#94a3b8">Kendaraan</span><span style="color:#e2e8f0">'+order.vehicle+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#94a3b8">Jemput</span><span style="color:#e2e8f0;max-width:200px;text-align:right">'+order.from+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#94a3b8">Tujuan</span><span style="color:#e2e8f0;max-width:200px;text-align:right">'+order.to+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:#94a3b8">Mitra Driver</span><span style="color:#e2e8f0">'+order.driver+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;border-top:1px solid #334155;padding-top:12px;margin-top:8px"><span style="color:#f1f5f9;font-weight:700">Total Biaya</span><span style="color:#10b981;font-weight:700">'+fmt(order.price)+'</span></div>';
+  }
+  document.querySelectorAll('#star-rating .star').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('rating-label').textContent='Klik ikon bintang untuk memberikan penilaian';
+  document.getElementById('review-comment').value='';
+  document.getElementById('btn-submit-review').classList.add('disabled');
+}
+function setRating(star){
+  currentRating=star;
+  document.querySelectorAll('#star-rating .star').forEach(function(s){s.classList.toggle('active',parseInt(s.getAttribute('data-star'))<=star);});
+  document.getElementById('rating-label').textContent=RATING_LABELS[star];
+  document.getElementById('btn-submit-review').classList.toggle('disabled',star===0);
+}
+function submitReview(){
+  if(currentRating===0){showToast('Berikan rating bintang terlebih dahulu!','error');return;}
+  if(!pendingOrder)return;
+  var comment=document.getElementById('review-comment').value.trim();
+  setBalance(getBalance()-pendingOrder.price);
+  addHistory(Object.assign({},pendingOrder,{rating:currentRating,comment:comment||null,completedAt:ts()}));
+  showToast('Ulasan Anda berhasil dikirim! 🌟','success');
+  
+  pendingOrder=null;currentRating=0;foodCart=[];voucherApplied=false;martCart=[];selectedVehicle=null;
+  document.getElementById('voucher-status').style.display='none';document.getElementById('food-voucher').value='';
+  document.getElementById('bosend-pickup').value='';document.getElementById('bosend-dest').value='';document.getElementById('bosend-weight').value='';
+  
+  showPage('page-history');
+}
+
+/* ====== PROFILE ====== */
+function getMemberLevel(trips){
+  if(trips>=20)return{label:'VIP Member',badge:'badge-yellow',emoji:'🌟'};
+  if(trips>=10)return{label:'Silver Member',badge:'badge-blue',emoji:'🥈'};
+  if(trips>=5)return{label:'Bronze Member',badge:'badge-green',emoji:'🥉'};
+  return{label:'Regular Member',badge:'badge-green',emoji:'👤'};
+}
+function renderProfile(){
+  if(!currentUser)return;
+  var data=getUserData(currentUser.email);var history=data.history||[];
+  var isPremium=currentUser.isPremium||data.isPremium;
+  var trips=history.length;var spent=history.reduce(function(s,h){return s+(h.price||0);},0);
+  var ratings=history.filter(function(h){return h.rating;});
+  var avg=ratings.length>0?(ratings.reduce(function(s,h){return s+h.rating;},0)/ratings.length).toFixed(1):'-';
+  var level=getMemberLevel(trips);var jd=currentUser.joinDate||data.joinDate||ts();
+  
+  document.getElementById('profile-avatar').textContent=currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('profile-name').textContent=currentUser.name;
+  document.getElementById('profile-email').textContent=currentUser.email;
+  document.getElementById('profile-total-trips').textContent=trips;
+  document.getElementById('profile-total-spent').textContent=spent>=1000000?'Rp '+(spent/1000000).toFixed(1)+'jt':fmt(spent);
+  document.getElementById('profile-avg-rating').textContent=avg==='-'?'-':avg+' ⭐';
+  document.getElementById('profile-info-name').textContent=currentUser.name;
+  document.getElementById('profile-info-email').textContent=currentUser.email;
+  document.getElementById('profile-join-date').textContent=shortDate(jd);
+  document.getElementById('profile-balance').textContent=fmt(getBalance());
+  
+  document.getElementById('profile-member-status').textContent = isPremium ? 'Premium Member 👑' : level.label + ' ' + level.emoji;
+  var lb=document.getElementById('profile-level-badge');
+  lb.className='badge ' + (isPremium ? 'badge-yellow' : level.badge);
+  lb.textContent = isPremium ? 'PREMIUM' : (trips>=20?'VIP':trips>=10?'SILVER':trips>=5?'BRONZE':'REGULAR');
+}
+
+/* ====== HISTORY ====== */
+function renderHistory(){
+  if(!currentUser)return;
+  var data=getUserData(currentUser.email);var list=document.getElementById('history-list');
+  if(!data.history||data.history.length===0){
+    list.innerHTML='<div style="text-align:center;padding:64px 0"><div style="font-size:3.5rem;margin-bottom:16px">📭</div><div style="color:#475569;font-weight:600;font-size:1rem">Belum ada riwayat perjalanan atau pesanan</div></div>';return;
+  }
+  list.innerHTML=data.history.map(function(entry){
+    var ico=entry.type==='BoFood'?'🍽️':entry.type==='BoRide'?'🏍️':entry.type==='BoMart'?'🛒':entry.type==='BoSend'?'📦':'🚗';
+    var stars='★'.repeat(entry.rating||0)+'☆'.repeat(5-(entry.rating||0));
+    var sc=(entry.rating||0)>=4?'#fbbf24':(entry.rating||0)>=3?'#f59e0b':'#f97316';
+    var det=(entry.type==='BoFood'||entry.type==='BoMart'||entry.type==='BoSend')&&entry.items?entry.items.map(function(i){return i.name+' x'+i.qty;}).join(', '):(entry.vehicle||'');
+    var discHtml=entry.discount>0?'<span class="badge badge-purple" style="font-size:.65rem;margin-left:8px">Diskon Diterapkan</span>':'';
+    return '<div class="card" style="padding:20px;display:flex;gap:18px;align-items:flex-start"><div style="width:48px;height:48px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">'+ico+'</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-size:.95rem;font-weight:700;color:#f1f5f9">'+entry.type+discHtml+'</span><span style="font-size:1.05rem;font-weight:700;color:#10b981">'+fmt(entry.price)+'</span></div><div style="font-size:.85rem;color:#64748b;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+entry.from+' → '+entry.to+'</div><div style="font-size:.8rem;color:#475569;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+det+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><span style="color:'+sc+';font-size:1rem">'+stars+'</span><span style="font-size:.75rem;color:#334155;font-weight:600">'+(entry.completedAt||entry.timestamp||'')+'</span></div></div></div>';
+  }).join('');
+}
+
+/* ====== RESET ====== */
+function resetAllState(){
+  currentUser=null;currentOrderType='';selectedVehicle=null;
+  foodCart=[];voucherApplied=false;martCart=[];martCatFilter='semua';
+  currentRating=0;pendingOrder=null;
+  if(trackingInterval){clearInterval(trackingInterval);trackingInterval=null;}
+  trafficStatus={};
+}
+
+/* ====== INIT ====== */
+function initApp(){
+  try{var raw=localStorage.getItem('boride_users');if(raw){var p=JSON.parse(raw);if(!Array.isArray(p)){localStorage.removeItem('boride_users');localStorage.removeItem('boride_session');}}}catch(e){localStorage.removeItem('boride_users');localStorage.removeItem('boride_session');}
+
+  populateDestinations();
+
+  document.getElementById('btn-login').addEventListener('click',handleLogin);
+  document.getElementById('btn-register').addEventListener('click',handleRegister);
+  document.getElementById('btn-to-register').addEventListener('click',function(){toggleAuthForm('register');});
+  document.getElementById('btn-to-login').addEventListener('click',function(){toggleAuthForm('login');});
+  document.getElementById('login-password').addEventListener('keydown',function(e){if(e.key==='Enter')handleLogin();});
+  document.getElementById('login-email').addEventListener('keydown',function(e){if(e.key==='Enter')handleLogin();});
+  document.getElementById('reg-password').addEventListener('keydown',function(e){if(e.key==='Enter')handleRegister();});
+
+  document.getElementById('btn-topup').addEventListener('click',topUpBalance);
+  document.getElementById('btn-refresh-traffic').addEventListener('click',refreshTraffic);
+
+  document.querySelectorAll('.service-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var g=btn.getAttribute('data-goto');
+      if(g==='bofood'){showPage('page-bofood');}
+      else if(g==='bomart'){showPage('page-bomart');}
+      else if(g==='bosend'){
+        let data = getUserData(currentUser.email);
+        if(currentUser.isPremium || data.isPremium) showPage('page-bosend');
+        else showPage('page-premium');
+      }
+      else{showPage('page-order');setOrderType(g);}
+    });
+  });
+
+  document.getElementById('order-destination').addEventListener('change',updateOrderSummary);
+  document.getElementById('order-pickup').addEventListener('input',updateOrderSummary);
+  document.getElementById('btn-confirm-order').addEventListener('click',confirmOrder);
+
+  document.getElementById('bosend-pickup').addEventListener('input', updateBoSendSummary);
+  document.getElementById('bosend-dest').addEventListener('input', updateBoSendSummary);
+  document.getElementById('bosend-weight').addEventListener('input', updateBoSendSummary);
+  document.getElementById('btn-confirm-bosend').addEventListener('click', confirmBoSendOrder);
+  document.getElementById('btn-submit-premium').addEventListener('click', submitPremiumForm);
+
+  document.getElementById('food-destination').addEventListener('change',renderFoodCart);
+  document.getElementById('btn-apply-voucher').addEventListener('click',applyVoucher);
+  document.getElementById('btn-confirm-food').addEventListener('click',confirmFoodOrder);
+
+  document.getElementById('mart-address').addEventListener('input',renderMartCart);
+  document.getElementById('btn-confirm-mart').addEventListener('click',confirmMartOrder);
+
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      martCatFilter=btn.getAttribute('data-cat');
+      document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      renderMartProducts();
+    });
+  });
+
+  document.querySelectorAll('#star-rating .star').forEach(function(btn){
+    btn.addEventListener('click',function(){setRating(parseInt(btn.getAttribute('data-star')));});
+  });
+  document.getElementById('btn-submit-review').addEventListener('click',submitReview);
+
+  document.getElementById('btn-profile-topup').addEventListener('click',topUpBalance);
+  document.getElementById('btn-profile-logout').addEventListener('click',handleLogout);
+
+  document.querySelectorAll('.sidebar-link[data-nav]').forEach(function(btn){
+    btn.addEventListener('click',function(){showPage(btn.getAttribute('data-nav'));});
+  });
+
+  document.querySelectorAll('.nav-back[data-nav-back]').forEach(function(btn){
+    btn.addEventListener('click',function(){showPage(btn.getAttribute('data-nav-back'));});
+  });
+
+  var sess=localStorage.getItem('boride_session');
+  if(sess){var users=getAllUsers(),user=null;for(var i=0;i<users.length;i++){if(users[i].email===sess){user=users[i];break;}}if(user){
+    currentUser=user;
+    var data = getUserData(user.email);
+    currentUser.isPremium = data.isPremium || false;
+    initHomePage();showPage('page-home');return;
+  }}
+  showPage('page-auth');
+}
+
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',initApp);}
+else{initApp();}
+</script>
+</body>
+</html>
